@@ -280,8 +280,18 @@ export class DefManager {
 		return def;
 	}
 
+	createGlobalDefFolder() {
+		const newFolder = window.NoteDefinition.settings.defFolder || DEFAULT_DEF_FOLDER;
+		this.app.vault.createFolder(newFolder);
+		this.setGlobalDefFolder(newFolder);
+	}
+
 	getGlobalDefFolder() {
 		return window.NoteDefinition.settings.defFolder || DEFAULT_DEF_FOLDER;
+	}
+
+	setGlobalDefFolder(folder: string) {
+		window.NoteDefinition.settings.defFolder = folder;
 	}
 }
 

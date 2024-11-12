@@ -1,8 +1,8 @@
-import { App, DropdownComponent, Modal, Notice, Setting } from "obsidian";
+import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting } from "obsidian";
 import { getDefFileManager } from "src/core/def-file-manager";
 import { DefFileUpdater } from "src/core/def-file-updater";
 import { DefFileType } from "src/core/file-parser";
-
+import { DEFAULT_DEF_FOLDER } from "src/settings";
 
 export class AddDefinitionModal {
 	app: App;
@@ -17,6 +17,9 @@ export class AddDefinitionModal {
 
 	atomicFolderPickerSetting: Setting;
 	atomicFolderPicker: DropdownComponent;
+
+	newFileButton: ButtonComponent;
+	newFolderButton: ButtonComponent;
 
 	constructor(app: App) {
 		this.app = app;
@@ -67,9 +70,15 @@ export class AddDefinitionModal {
 					if (val === DefFileType.Consolidated) {
 						this.atomicFolderPickerSetting.settingEl.hide();
 						this.defFilePickerSetting.settingEl.show();
+
+						this.newFolderButton.buttonEl.hide();
+						this.newFileButton.buttonEl.show();
 					} else if (val === DefFileType.Atomic) {
 						this.defFilePickerSetting.settingEl.hide();
 						this.atomicFolderPickerSetting.settingEl.show();
+
+						this.newFileButton.buttonEl.hide();
+						this.newFolderButton.buttonEl.show();
 					}
 				});
 				this.fileTypePicker = component;
@@ -97,11 +106,36 @@ export class AddDefinitionModal {
 			});
 		this.atomicFolderPickerSetting.settingEl.hide();
 
-		const button = this.modal.contentEl.createEl("button", {
+		this.newFileButton = new ButtonComponent(this.modal.contentEl)
+			.setButtonText("New File")
+			.onClick(() => {
+				console.log('new file button clicked');
+			});
+
+		this.newFolderButton = new ButtonComponent(this.modal.contentEl)
+			.setButtonText("New Folder")
+			.onClick(() => {
+				const defFileManager = getDefFileManager();
+				defFileManager.createGlobalDefFolder();
+			});
+		this.newFolderButton.buttonEl.hide();
+
+
+		// const newButton = this.modal.contentEl.createEl("button", {
+		// 	text: "New Dictionary",
+		// 	cls: 'add-modal-new-button',
+		// });
+
+		// newButton.addEventListener('click', () => {
+		// 	console.log('new button clicked');
+		// });
+
+		const saveButton = this.modal.contentEl.createEl("button", {
 			text: "Save",
 			cls: 'edit-modal-save-button',
 		});
-		button.addEventListener('click', () => {
+
+		saveButton.addEventListener('click', () => {
 			if (this.submitting) {
 				return;
 			}
@@ -121,7 +155,7 @@ export class AddDefinitionModal {
 				fileType: fileType as DefFileType,
 				key: phraseText.value.toLowerCase(),
 				word: phraseText.value,
-				aliases: aliasText.value? aliasText.value.split(",").map(alias => alias.trim()) : [],
+				aliases: aliasText.value ? aliasText.value.split(",").map(alias => alias.trim()) : [],
 				definition: defText.value,
 				file: definitionFile,
 			}, this.atomicFolderPicker.getValue());
