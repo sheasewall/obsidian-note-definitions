@@ -2,7 +2,7 @@ import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting } from 
 import { getDefFileManager } from "src/core/def-file-manager";
 import { DefFileUpdater } from "src/core/def-file-updater";
 import { DefFileType } from "src/core/file-parser";
-import { DEFAULT_DEF_FOLDER } from "src/settings";
+import { getSettings, DEFAULT_DEF_FOLDER } from "src/settings";
 
 export class AddDefinitionModal {
 	app: App;
@@ -115,8 +115,9 @@ export class AddDefinitionModal {
 		this.newFolderButton = new ButtonComponent(this.modal.contentEl)
 			.setButtonText("New Folder")
 			.onClick(() => {
-				const defFileManager = getDefFileManager();
-				defFileManager.createGlobalDefFolder();
+				// TODO: Error handle
+				const newFolderPath = defManager.createGlobalDefFolder();
+				this.atomicFolderPicker.addOption(newFolderPath, newFolderPath + "/");
 			});
 		this.newFolderButton.buttonEl.hide();
 
@@ -143,14 +144,19 @@ export class AddDefinitionModal {
 				new Notice("Please fill in a definition value");
 				return;
 			}
-			if (!this.defFilePicker.getValue()) {
+			const fileType = this.fileTypePicker.getValue();
+			if (fileType === DefFileType.Consolidated && !this.defFilePicker.getValue()) {
 				new Notice("Please choose a definition file. If you do not have any definition files, please create one.")
 				return;
 			}
+			if (fileType === DefFileType.Atomic && !this.atomicFolderPicker.getValue()) {
+				new Notice("Please choose a definition folder. If you do not have any definition folders, please create one")
+				return;
+			}
+
 			const defFileManager = getDefFileManager();
 			const definitionFile = defFileManager.globalDefFiles.get(this.defFilePicker.getValue());
 			const updated = new DefFileUpdater(this.app);
-			const fileType = this.fileTypePicker.getValue();
 			updated.addDefinition({
 				fileType: fileType as DefFileType,
 				key: phraseText.value.toLowerCase(),

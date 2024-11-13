@@ -281,9 +281,10 @@ export class DefManager {
 	}
 
 	createGlobalDefFolder() {
-		const newFolder = window.NoteDefinition.settings.defFolder || DEFAULT_DEF_FOLDER;
-		this.app.vault.createFolder(newFolder);
-		this.setGlobalDefFolder(newFolder);
+		const newFolderPath = this.getGlobalDefFolder();
+		this.app.vault.createFolder(newFolderPath);
+		this.setGlobalDefFolder(newFolderPath);
+		return newFolderPath;
 	}
 
 	getGlobalDefFolder() {
