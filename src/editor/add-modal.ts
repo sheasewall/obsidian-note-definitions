@@ -2,7 +2,6 @@ import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting } from 
 import { getDefFileManager } from "src/core/def-file-manager";
 import { DefFileUpdater } from "src/core/def-file-updater";
 import { DefFileType } from "src/core/file-parser";
-import { getSettings, DEFAULT_DEF_FOLDER } from "src/settings";
 
 export class AddDefinitionModal {
 	app: App;
@@ -111,12 +110,14 @@ export class AddDefinitionModal {
 			.setClass('add-modal-new-button')
 			.setButtonText("New Folder")
 			.onClick(() => {
-				// TODO: Error handle
-				const newFolderPath = defManager.createGlobalDefFolder();
+				const newFolderPath = defManager.ensureGlobalDefFolder();
+				if (!newFolderPath) {
+					new Notice("Folder already exists");
+					return;
+				};
 				this.atomicFolderPicker.addOption(newFolderPath, newFolderPath + "/");
 			});
 		this.newFolderButton.buttonEl.hide();
-
 
 		this.newFileButton = new ButtonComponent(this.modal.contentEl)
 			.setClass('add-modal-new-button')

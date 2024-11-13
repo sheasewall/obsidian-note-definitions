@@ -156,6 +156,8 @@ export class DefManager {
 		this.globalPrefixTree = new PTreeNode();
 		this.globalDefs.clear();
 		this.globalDefFiles = new Map<string, TFile>();
+		this.globalDefFolders = new Map<string, TFolder>();
+		this.consolidatedDefFiles = new Map<string, TFile>();
 	}
 
 	// Load all definitions from registered def folder
@@ -283,27 +285,27 @@ export class DefManager {
 	}
 
 	createConsolidatedFile() {
-		this.createGlobalDefFolder();
-
 		const fmBuilder = new FrontmatterBuilder();
 		fmBuilder.add("def-type", "consolidated");
-
 		const fm = fmBuilder.finish();
-		const folderPath = this.getGlobalDefFolder();
-		let filename = "dictionary";
-		let counter = 0;
 
+		const folderPath = this.ensureGlobalDefFolder() || this.getGlobalDefFolder();
+		const filename = "dictionary";
+		let counter = 0;
 		while (this.app.vault.getAbstractFileByPath(`${folderPath}/${filename} ${counter}.md`)) {
 			counter++;
 		}
-
 		const newFilePath = `${folderPath}/${filename} ${counter}.md`;
 		this.app.vault.create(newFilePath, fm);
 		return newFilePath
 	}
 
-	createGlobalDefFolder() {
+	ensureGlobalDefFolder(): string | null {
 		const newFolderPath = this.getGlobalDefFolder();
+		if (this.app.vault.getAbstractFileByPath(newFolderPath)) {
+			// Folder already exists
+			return null;
+		};
 		this.app.vault.createFolder(newFolderPath);
 		this.setGlobalDefFolder(newFolderPath);
 		return newFolderPath;

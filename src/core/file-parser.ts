@@ -24,7 +24,7 @@ export class FileParser {
 	// Optional argument used when file cache may not be updated
 	// and we know the new contents of the file
 	async parseFile(fileContent?: string): Promise<Definition[]> {
-		this.defFileType = this.getDefFileType();
+		this.defFileType = await this.getDefFileType();
 
 		switch (this.defFileType) {
 			case DefFileType.Consolidated:
@@ -36,9 +36,19 @@ export class FileParser {
 		}
 	}
 
-	private getDefFileType(): DefFileType {
+	private async getDefFileType(): Promise<DefFileType> {
 		const fileCache = this.app.metadataCache.getFileCache(this.file);
-		const fmFileType = fileCache?.frontmatter?.[DEF_TYPE_FM];
+		let fmFileType = fileCache?.frontmatter?.[DEF_TYPE_FM];
+		if(!fmFileType) {
+			const content = await this.app.vault.read(this.file);
+			if (content.startsWith('---\ndef-type: ' + DefFileType.Atomic)) {
+				fmFileType = DefFileType.Atomic;
+			};
+			if (content.startsWith('---\ndef-type: ' + DefFileType.Consolidated)) {
+				fmFileType = DefFileType.Consolidated;
+			};
+		}
+		
 		if (fmFileType && 
 			(fmFileType === DefFileType.Consolidated || fmFileType === DefFileType.Atomic)) {
 			return fmFileType;

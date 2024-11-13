@@ -46,7 +46,9 @@ export default class NoteDefinition extends Plugin {
 		this.addSettingTab(new SettingsTab(this.app, this));
 		this.registerMarkdownPostProcessor(postProcessor);
 
-		this.fileExplorerDeco.run();
+		this.fileExplorerDeco.run().then(() => {
+			this.defManager.loadDefinitions();
+		});
 	}
 
 	async saveSettings() {
