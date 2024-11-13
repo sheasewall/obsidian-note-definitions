@@ -198,15 +198,6 @@ export default class NoteDefinition extends Plugin {
 				this.refreshDefinitions();
 			}
 		}));
-
-		// Modifying files under def folder should refresh definitions
-		this.registerEvent(this.app.vault.on('modify', (file) => {
-			const settings = getSettings();
-			if (file.path.startsWith(settings.defFolder)) {
-				this.fileExplorerDeco.run();
-				this.refreshDefinitions();
-			}
-		}));
 	}
 
 	registerMenuForMarkedWords(menu: Menu, def: Definition) {

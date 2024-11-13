@@ -90,6 +90,7 @@ export class AddDefinitionModal {
 			.addDropdown(component => {
 				const defFiles = defManager.getConsolidatedDefFiles();
 				defFiles.forEach(file => {
+					console.log('consolidated:', file);
 					component.addOption(file.path, file.path);
 				});
 				this.defFilePicker = component;
@@ -106,13 +107,8 @@ export class AddDefinitionModal {
 			});
 		this.atomicFolderPickerSetting.settingEl.hide();
 
-		this.newFileButton = new ButtonComponent(this.modal.contentEl)
-			.setButtonText("New File")
-			.onClick(() => {
-				console.log('new file button clicked');
-			});
-
 		this.newFolderButton = new ButtonComponent(this.modal.contentEl)
+			.setClass('add-modal-new-button')
 			.setButtonText("New Folder")
 			.onClick(() => {
 				// TODO: Error handle
@@ -122,14 +118,14 @@ export class AddDefinitionModal {
 		this.newFolderButton.buttonEl.hide();
 
 
-		// const newButton = this.modal.contentEl.createEl("button", {
-		// 	text: "New Dictionary",
-		// 	cls: 'add-modal-new-button',
-		// });
-
-		// newButton.addEventListener('click', () => {
-		// 	console.log('new button clicked');
-		// });
+		this.newFileButton = new ButtonComponent(this.modal.contentEl)
+			.setClass('add-modal-new-button')
+			.setButtonText("New File")
+			.onClick(() => {
+				const newFilePath = defManager.createConsolidatedFile();
+				this.defFilePicker.addOption(newFilePath, newFilePath);
+				this.defFilePicker.setValue(newFilePath);
+			});
 
 		const saveButton = this.modal.contentEl.createEl("button", {
 			text: "Save",

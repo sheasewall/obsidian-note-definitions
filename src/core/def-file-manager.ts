@@ -6,6 +6,7 @@ import { logDebug, logWarn } from "src/util/log";
 import { useRetry } from "src/util/retry";
 import { DefFileType, FileParser } from "./file-parser";
 import { Definition } from "./model";
+import { FrontmatterBuilder } from "./fm-builder";
 
 let defFileManager: DefManager;
 
@@ -275,9 +276,30 @@ export class DefManager {
 		let parser = new FileParser(this.app, file);
 		const def = await parser.parseFile();
 		if (parser.defFileType === DefFileType.Consolidated) {
+			console.log('parser thinks this is a consolidated file', file);
 			this.consolidatedDefFiles.set(file.path, file);
 		}
 		return def;
+	}
+
+	createConsolidatedFile() {
+		this.createGlobalDefFolder();
+
+		const fmBuilder = new FrontmatterBuilder();
+		fmBuilder.add("def-type", "consolidated");
+
+		const fm = fmBuilder.finish();
+		const folderPath = this.getGlobalDefFolder();
+		let filename = "dictionary";
+		let counter = 0;
+
+		while (this.app.vault.getAbstractFileByPath(`${folderPath}/${filename} ${counter}.md`)) {
+			counter++;
+		}
+
+		const newFilePath = `${folderPath}/${filename} ${counter}.md`;
+		this.app.vault.create(newFilePath, fm);
+		return newFilePath
 	}
 
 	createGlobalDefFolder() {
