@@ -89,7 +89,6 @@ export class AddDefinitionModal {
 			.addDropdown(component => {
 				const defFiles = defManager.getConsolidatedDefFiles();
 				defFiles.forEach(file => {
-					console.log('consolidated:', file);
 					component.addOption(file.path, file.path);
 				});
 				this.defFilePicker = component;

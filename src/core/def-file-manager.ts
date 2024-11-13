@@ -278,7 +278,6 @@ export class DefManager {
 		let parser = new FileParser(this.app, file);
 		const def = await parser.parseFile();
 		if (parser.defFileType === DefFileType.Consolidated) {
-			console.log('parser thinks this is a consolidated file', file);
 			this.consolidatedDefFiles.set(file.path, file);
 		}
 		return def;
