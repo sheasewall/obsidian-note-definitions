@@ -109,7 +109,7 @@ export default class NoteDefinition extends Plugin {
 			name: "Refresh definitions",
 			callback: () => {
 				this.fileExplorerDeco.run();
-				this.defManager.loadDefinitions();
+				this.refreshDefinitions();
 			}
 		});
 
@@ -192,6 +192,15 @@ export default class NoteDefinition extends Plugin {
 
 		// Creating files under def folder should register file as definition file
 		this.registerEvent(this.app.vault.on('create', (file) => {
+			const settings = getSettings();
+			if (file.path.startsWith(settings.defFolder)) {
+				this.fileExplorerDeco.run();
+				this.refreshDefinitions();
+			}
+		}));
+
+		// Modifying files under def folder should refresh definitions
+		this.registerEvent(this.app.vault.on('modify', (file) => {
 			const settings = getSettings();
 			if (file.path.startsWith(settings.defFolder)) {
 				this.fileExplorerDeco.run();

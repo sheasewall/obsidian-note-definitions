@@ -88,6 +88,11 @@ export class DefFileUpdater {
 
 		getDefFileManager().addDefFile(file);
 		getDefFileManager().markDirty(file);
+
+		// This is a somewhat dirty way of dealing with concurrency issues
+		// that cause newly added Atomic definitions to not be marked
+		// with DEF in the file viewer.
+		this.app.vault.modify(file, fm+def.definition);
 	}
 
 	private async addConsoldiatedFileDefinition(def: Partial<Definition>) {
