@@ -1,4 +1,4 @@
-import { Menu, Notice, Plugin, TFolder, WorkspaceWindow } from 'obsidian';
+import { Menu, Notice, Plugin, TAbstractFile, TFolder, WorkspaceWindow } from 'obsidian';
 import { injectGlobals } from './globals';
 import { logDebug } from './util/log';
 import { definitionMarker } from './editor/decoration';
@@ -16,6 +16,8 @@ import { initDefinitionModal } from './editor/mobile/definition-modal';
 import { FMSuggestModal } from './editor/frontmatter-suggest-modal';
 import { registerDefFile } from './editor/def-file-registration';
 import { DefFileType } from './core/file-parser';
+
+const REFRESH_DELAY_MS = 1000;
 
 export default class NoteDefinition extends Plugin {
 	activeEditorExtensions: Extension[] = [];
@@ -192,19 +194,11 @@ export default class NoteDefinition extends Plugin {
 
 		// Creating files under def folder should register file as definition file
 		this.registerEvent(this.app.vault.on('create', (file) => {
-			const settings = getSettings();
-			if (file.path.startsWith(settings.defFolder)) {
-				this.fileExplorerDeco.run();
-				this.refreshDefinitions();
-			}
+			this.delayedDefFileRefresh(file);
 		}));
 
 		this.registerEvent(this.app.vault.on('delete', (file) => {
-			const settings = getSettings();
-			if (file.path.startsWith(settings.defFolder)) {
-				this.fileExplorerDeco.run();
-				this.refreshDefinitions();
-			}
+			this.delayedDefFileRefresh(file);
 		}));
 	}
 
@@ -233,6 +227,16 @@ export default class NoteDefinition extends Plugin {
 
 	reloadUpdatedDefinitions() {
 		this.defManager.loadUpdatedFiles();
+	}
+
+	delayedDefFileRefresh(file: TAbstractFile) {
+		setTimeout(() => {
+			const settings = getSettings();
+			if (file.path.startsWith(settings.defFolder)) {
+				this.fileExplorerDeco.run();
+				this.refreshDefinitions();
+			}
+		}, REFRESH_DELAY_MS);
 	}
 
 	updateEditorExts() {
