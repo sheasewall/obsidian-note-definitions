@@ -1,4 +1,4 @@
-import { App, DropdownComponent, Modal, Notice, Setting } from "obsidian";
+import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting } from "obsidian";
 import { getDefFileManager } from "src/core/def-file-manager";
 import { DefFileUpdater } from "src/core/def-file-updater";
 import { DefFileType } from "src/core/file-parser";
@@ -19,6 +19,7 @@ export class AddDefinitionModal {
 	atomicFolderPicker: DropdownComponent;
 
 	private static lastSelectedConsolidatedFile: string;
+	newFolderButton: ButtonComponent
 
 	constructor(app: App) {
 		this.app = app;
@@ -96,6 +97,18 @@ export class AddDefinitionModal {
 				this.atomicFolderPicker = component;
 			});
 
+		this.newFolderButton = new ButtonComponent(this.modal.contentEl)
+			.setClass('add-modal-new-folder-button')
+			.setButtonText("Create global folder")
+			.onClick(() => {
+				const globalFolderPath = defManager.ensureGlobalDefFolder();
+				if (!globalFolderPath) {
+					new Notice("Folder already exists");
+					return;
+				};
+				this.atomicFolderPicker.addOption(globalFolderPath, globalFolderPath + "/");
+			});
+
 		this.switchMenu(window.NoteDefinition.settings.addModalDefaultFileType);
 		const button = this.modal.contentEl.createEl("button", {
 			text: "Save",
@@ -109,14 +122,18 @@ export class AddDefinitionModal {
 				new Notice("Please fill in a definition value");
 				return;
 			}
-			if (!this.defFilePicker.getValue()) {
-				new Notice("Please choose a definition file. If you do not have any definition files, please create one.")
+			const fileType = this.fileTypePicker.getValue();
+			if (fileType === DefFileType.Consolidated && !this.defFilePicker.getValue()) {
+				new Notice("Please choose a definition file. If you do not have any definition files, please create one.");
+				return;
+			}
+			if (fileType === DefFileType.Atomic && !this.atomicFolderPicker.getValue()) {
+				new Notice("Please choose a folder to add the definition to. If you do not have any folders, please create one.");
 				return;
 			}
 			const defFileManager = getDefFileManager();
 			const definitionFile = defFileManager.globalDefFiles.get(this.defFilePicker.getValue());
 			const updated = new DefFileUpdater(this.app);
-			const fileType = this.fileTypePicker.getValue();
 			updated.addDefinition({
 				fileType: fileType as DefFileType,
 				key: phraseText.value.toLowerCase(),
