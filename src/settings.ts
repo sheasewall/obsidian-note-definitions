@@ -41,6 +41,7 @@ export interface Settings {
 	popoverEvent: PopoverEventSettings;
 	defFileParseConfig: DefFileParseConfig;
 	defPopoverConfig: DefinitionPopoverConfig;
+	addModalDefaultFileType: DefFileType;
 }
 
 export const DEFAULT_DEF_FOLDER = "definitions"
@@ -49,6 +50,7 @@ export const DEFAULT_SETTINGS: Partial<Settings> = {
 	enableInReadingView: true,
 	enableSpellcheck: true,
 	popoverEvent: PopoverEventSettings.Hover,
+	addModalDefaultFileType: DefFileType.Consolidated,
 	defFileParseConfig: {
 		defaultFileType: DefFileType.Consolidated,
 		divider: {
@@ -162,17 +164,30 @@ export class SettingsTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Default definition file type")
+			.setName("Default parsed definition file type")
 			.setDesc("When the 'def-type' frontmatter is not specified, the definition file will be treated as this configured default file type.")
 			.addDropdown(component => {
 				component.addOption(DefFileType.Consolidated, "consolidated");
 				component.addOption(DefFileType.Atomic, "atomic");
-				component.setValue(this.settings.defFileParseConfig.defaultFileType ?? DefFileType.Consolidated);
+				component.setValue(this.settings.defFileParseConfig.defaultFileType ?? DEFAULT_SETTINGS.defFileParseConfig?.defaultFileType);
 				component.onChange(async val => {
 					this.settings.defFileParseConfig.defaultFileType = val as DefFileType;
 					await this.plugin.saveSettings();
 				});
-			});
+			}); 
+
+		new Setting(containerEl)
+			.setName("Default new definition file type")
+			.setDesc("When adding a definition through the add modal, the pre-selected file type will be this configured default.")
+			.addDropdown(component => {
+				component.addOption(DefFileType.Consolidated, "consolidated");
+				component.addOption(DefFileType.Atomic, "atomic");
+				component.setValue(this.settings.addModalDefaultFileType ?? DEFAULT_SETTINGS.addModalDefaultFileType);
+				component.onChange(async val => {
+					this.settings.addModalDefaultFileType = val as DefFileType;
+					await this.plugin.saveSettings();
+				});
+			}); 
 
 		new Setting(containerEl)
 			.setName("Automatically detect plurals -- English only")

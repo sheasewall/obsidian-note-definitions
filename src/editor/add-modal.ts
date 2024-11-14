@@ -63,15 +63,7 @@ export class AddDefinitionModal {
 			.addDropdown(component => {
 				component.addOption(DefFileType.Consolidated, "Consolidated");
 				component.addOption(DefFileType.Atomic, "Atomic");
-				component.onChange(val => {
-					if (val === DefFileType.Consolidated) {
-						this.atomicFolderPickerSetting.settingEl.hide();
-						this.defFilePickerSetting.settingEl.show();
-					} else if (val === DefFileType.Atomic) {
-						this.defFilePickerSetting.settingEl.hide();
-						this.atomicFolderPickerSetting.settingEl.show();
-					}
-				});
+				component.onChange(val => this.switchMenu(val));
 				this.fileTypePicker = component;
 			});
 
@@ -95,8 +87,8 @@ export class AddDefinitionModal {
 				});
 				this.atomicFolderPicker = component;
 			});
-		this.atomicFolderPickerSetting.settingEl.hide();
 
+		this.switchMenu(window.NoteDefinition.settings.addModalDefaultFileType);
 		const button = this.modal.contentEl.createEl("button", {
 			text: "Save",
 			cls: 'edit-modal-save-button',
@@ -129,5 +121,16 @@ export class AddDefinitionModal {
 		});
 
 		this.modal.open();
+	}
+
+	switchMenu(defFileType: string) {
+		this.fileTypePicker.setValue(defFileType);
+		if (defFileType === DefFileType.Consolidated) {
+			this.atomicFolderPickerSetting.settingEl.hide();
+			this.defFilePickerSetting.settingEl.show();
+		} else if (defFileType === DefFileType.Atomic) {
+			this.defFilePickerSetting.settingEl.hide();
+			this.atomicFolderPickerSetting.settingEl.show();
+		}
 	}
 }
