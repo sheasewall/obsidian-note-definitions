@@ -4,12 +4,14 @@ import { DEFAULT_DEF_FOLDER } from "src/settings";
 import { normaliseWord } from "src/util/editor";
 import { logDebug, logWarn } from "src/util/log";
 import { useRetry } from "src/util/retry";
-import { DefFileType, FileParser } from "./file-parser";
+import { DefFileType, FileParser, DEF_TYPE_FM } from "./file-parser";
 import { Definition } from "./model";
+import { FrontmatterBuilder } from "./fm-builder";
 
 let defFileManager: DefManager;
 
 export const DEF_CTX_FM_KEY = "def-context";
+export const CNSD_FILE_PREFIX = "dictionary";
 
 export class DefManager {
 	app: App;
@@ -156,6 +158,7 @@ export class DefManager {
 		this.globalDefs.clear();
 		this.globalDefFiles = new Map<string, TFile>();
 		this.globalDefFolders = new Map<string, TFolder>;
+		this.consolidatedDefFiles = new Map<string, TFile>();
 	}
 
 	// Load all definitions from registered def folder
@@ -281,7 +284,22 @@ export class DefManager {
 		return def;
 	}
 
-	ensureGlobalDefFolder() {
+	createConsolidatedFile(): string {
+		const fmBuilder = new FrontmatterBuilder();
+		fmBuilder.add(DEF_TYPE_FM, DefFileType.Consolidated);
+		const fm = fmBuilder.finish();
+
+		const folderPath = this.ensureGlobalDefFolder() || this.getGlobalDefFolder();
+		let counter = 0;
+		while (this.app.vault.getAbstractFileByPath(`${folderPath}/${CNSD_FILE_PREFIX} ${counter}.md`)) {
+			counter++;
+		}
+		const newFilePath = `${folderPath}/${CNSD_FILE_PREFIX} ${counter}.md`;
+		this.app.vault.create(newFilePath, fm);
+		return newFilePath
+	}
+
+	ensureGlobalDefFolder(): string | null {
 		const folderPath = this.getGlobalDefFolder();
 		const folder = this.app.vault.getAbstractFileByPath(folderPath);
 		if (folder) {
@@ -291,7 +309,7 @@ export class DefManager {
 		return folderPath;
 	}
 
-	getGlobalDefFolder() {
+	getGlobalDefFolder(): string {
 		return window.NoteDefinition.settings.defFolder || DEFAULT_DEF_FOLDER;
 	}
 }

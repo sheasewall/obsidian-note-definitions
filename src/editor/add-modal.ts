@@ -14,6 +14,7 @@ export class AddDefinitionModal {
 	fileTypePicker: DropdownComponent;
 	defFilePickerSetting: Setting;
 	defFilePicker: DropdownComponent;
+	newFileButton: ButtonComponent;
 
 	atomicFolderPickerSetting: Setting;
 	atomicFolderPicker: DropdownComponent;
@@ -87,6 +88,15 @@ export class AddDefinitionModal {
 				this.defFilePicker = component;
 			});
 
+		this.newFileButton = new ButtonComponent(this.modal.contentEl)
+			.setClass('add-modal-new-folder-button')
+			.setButtonText("Create new consolidated file")
+			.onClick(() => {
+				const newFilePath = defManager.createConsolidatedFile();
+				this.defFilePicker.addOption(newFilePath, newFilePath);
+				this.defFilePicker.setValue(newFilePath);
+			});
+
 		this.atomicFolderPickerSetting = new Setting(this.modal.contentEl)
 			.setName("Add file to folder")
 			.addDropdown(component => {
@@ -108,13 +118,14 @@ export class AddDefinitionModal {
 				};
 				this.atomicFolderPicker.addOption(globalFolderPath, globalFolderPath + "/");
 			});
+		this.newFolderButton.buttonEl.hide();
 
 		this.switchMenu(window.NoteDefinition.settings.addModalDefaultFileType);
-		const button = this.modal.contentEl.createEl("button", {
+		const saveButton = this.modal.contentEl.createEl("button", {
 			text: "Save",
 			cls: 'edit-modal-save-button',
 		});
-		button.addEventListener('click', () => {
+		saveButton.addEventListener('click', () => {
 			if (this.submitting) {
 				return;
 			}
@@ -151,11 +162,15 @@ export class AddDefinitionModal {
 	switchMenu(defFileType: string) {
 		this.fileTypePicker.setValue(defFileType);
 		if (defFileType === DefFileType.Consolidated) {
+			this.newFolderButton.buttonEl.hide();
 			this.atomicFolderPickerSetting.settingEl.hide();
+			this.newFileButton.buttonEl.show();
 			this.defFilePickerSetting.settingEl.show();
 		} else if (defFileType === DefFileType.Atomic) {
 			this.defFilePickerSetting.settingEl.hide();
+			this.newFileButton.buttonEl.hide();
 			this.atomicFolderPickerSetting.settingEl.show();
+			this.newFolderButton.buttonEl.show();
 		}
 	}
 }
