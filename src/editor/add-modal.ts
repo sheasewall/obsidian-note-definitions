@@ -18,6 +18,8 @@ export class AddDefinitionModal {
 	atomicFolderPickerSetting: Setting;
 	atomicFolderPicker: DropdownComponent;
 
+	private static lastSelectedConsolidatedFile: string;
+
 	constructor(app: App) {
 		this.app = app;
 		this.modal = new Modal(app);
@@ -75,6 +77,12 @@ export class AddDefinitionModal {
 				defFiles.forEach(file => {
 					component.addOption(file.path, file.path);
 				});
+				if (defFiles.find(file => file.path === AddDefinitionModal.lastSelectedConsolidatedFile)) {
+					component.setValue(AddDefinitionModal.lastSelectedConsolidatedFile);
+				}
+				component.onChange(val => {
+					AddDefinitionModal.lastSelectedConsolidatedFile = val;
+				});
 				this.defFilePicker = component;
 			});
 
@@ -113,7 +121,7 @@ export class AddDefinitionModal {
 				fileType: fileType as DefFileType,
 				key: phraseText.value.toLowerCase(),
 				word: phraseText.value,
-				aliases: aliasText.value? aliasText.value.split(",").map(alias => alias.trim()) : [],
+				aliases: aliasText.value ? aliasText.value.split(",").map(alias => alias.trim()) : [],
 				definition: defText.value,
 				file: definitionFile,
 			}, this.atomicFolderPicker.getValue());
