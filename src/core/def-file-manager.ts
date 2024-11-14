@@ -157,7 +157,7 @@ export class DefManager {
 		this.globalPrefixTree = new PTreeNode();
 		this.globalDefs.clear();
 		this.globalDefFiles = new Map<string, TFile>();
-		this.globalDefFolders = new Map<string, TFolder>;
+		this.globalDefFolders = new Map<string, TFolder>();
 		this.consolidatedDefFiles = new Map<string, TFile>();
 	}
 

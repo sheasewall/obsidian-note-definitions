@@ -18,9 +18,9 @@ export class AddDefinitionModal {
 
 	atomicFolderPickerSetting: Setting;
 	atomicFolderPicker: DropdownComponent;
+	newFolderButton: ButtonComponent
 
 	private static lastSelectedConsolidatedFile: string;
-	newFolderButton: ButtonComponent
 
 	constructor(app: App) {
 		this.app = app;
@@ -118,9 +118,9 @@ export class AddDefinitionModal {
 				};
 				this.atomicFolderPicker.addOption(globalFolderPath, globalFolderPath + "/");
 			});
-		this.newFolderButton.buttonEl.hide();
 
 		this.switchMenu(window.NoteDefinition.settings.addModalDefaultFileType);
+		
 		const saveButton = this.modal.contentEl.createEl("button", {
 			text: "Save",
 			cls: 'edit-modal-save-button',
