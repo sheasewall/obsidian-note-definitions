@@ -34,12 +34,19 @@ export interface DefinitionPopoverConfig {
 	backgroundColour?: string;
 }
 
+export interface DefinitionDecorationConfig {
+	underlineColour: string;
+	underlineStyle: string;
+}
+
 export interface Settings {
 	enableInReadingView: boolean;
 	defFolder: string;
 	popoverEvent: PopoverEventSettings;
 	defFileParseConfig: DefFileParseConfig;
 	defPopoverConfig: DefinitionPopoverConfig;
+	defDecorationConfig: DefinitionDecorationConfig;
+	linkDecorationConfig: DefinitionDecorationConfig;
 }
 
 export const DEFAULT_DEF_FOLDER = "definitions"
@@ -63,6 +70,14 @@ export const DEFAULT_SETTINGS: Partial<Settings> = {
 		maxHeight: 150,
 		popoverDismissEvent: PopoverDismissType.Click,
 		enableDefinitionLink: false,
+	},
+	defDecorationConfig: {
+		underlineColour: "#FFD700",
+		underlineStyle: "dotted"
+	},
+	linkDecorationConfig: {
+		underlineColour: "#50C878",
+		underlineStyle: "dotted"
 	}
 }
 
@@ -98,11 +113,11 @@ export class SettingsTab extends PluginSettingTab {
 				component.setValue(this.settings.defFolder);
 				component.setPlaceholder(DEFAULT_DEF_FOLDER);
 				component.setDisabled(true)
-				setTooltip(component.inputEl, 
+				setTooltip(component.inputEl,
 					"In the file explorer, right-click on the desired folder and click on 'Set definition folder' to change the definition folder",
-				{
-					delay: 100
-				});
+					{
+						delay: 100
+					});
 			});
 		new Setting(containerEl)
 			.setName("Definition file format settings")
@@ -226,7 +241,7 @@ export class SettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			});
-		
+
 
 		new Setting(containerEl)
 			.setName("Display definition source file")
@@ -287,6 +302,7 @@ export class SettingsTab extends PluginSettingTab {
 				component.onChange(async val => {
 					this.settings.defPopoverConfig.enableDefinitionLink = val;
 					await this.plugin.saveSettings();
+					this.display();
 				});
 			});
 
@@ -311,6 +327,88 @@ export class SettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			});
+
+		new Setting(containerEl)
+			.setHeading()
+			.setName("Definition Decoration Settings");
+
+		new Setting(containerEl)
+			.setName("Underline colour")
+			.setDesc("Customise the underline colour of defined terms in the editor")
+			.addExtraButton(component => {
+				component.setIcon("rotate-ccw");
+				component.setTooltip("Reset to default");
+				component.onClick(async () => {
+					if (DEFAULT_SETTINGS.defDecorationConfig) {
+						this.settings.defDecorationConfig.underlineColour = DEFAULT_SETTINGS.defDecorationConfig.underlineColour;
+					}
+					await this.plugin.saveSettings();
+					this.display();
+				});
+			})
+			.addColorPicker(component => {
+				component.setValue(this.settings.defDecorationConfig.underlineColour);
+				component.onChange(async val => {
+					this.settings.defDecorationConfig.underlineColour = val;
+					await this.plugin.saveSettings();
+				})
+			});
+
+		new Setting(containerEl)
+			.setName("Underline style")
+			.setDesc("Change the style of the underline for defined terms in the editor")
+			.addDropdown(component => {
+				component.addOption("dotted", "Dotted");
+				component.addOption("dashed", "Dashed");
+				component.addOption("solid", "Solid");
+				component.addOption("wavy", "Wavy");
+				component.setValue(this.settings.defDecorationConfig.underlineStyle);
+				component.onChange(async val => {
+					this.settings.defDecorationConfig.underlineStyle = val;
+					await this.plugin.saveSettings();
+				});
+			});
+
+		if (this.settings.defPopoverConfig.enableDefinitionLink) {
+			new Setting(containerEl)
+				.setName("Link underline colour")
+				.setDesc("Customise the underline colour of linked terms in the popover")
+				.addExtraButton(component => {
+					component.setIcon("rotate-ccw");
+					component.setTooltip("Reset to default");
+					component.onClick(async () => {
+						if (DEFAULT_SETTINGS.linkDecorationConfig) {
+							this.settings.linkDecorationConfig.underlineColour = DEFAULT_SETTINGS.linkDecorationConfig.underlineColour;
+						}
+						await this.plugin.saveSettings();
+						this.display();
+					});
+				})
+				.addColorPicker(component => {
+					component.setValue(this.settings.linkDecorationConfig.underlineColour);
+					component.onChange(async val => {
+						this.settings.linkDecorationConfig.underlineColour = val;
+						await this.plugin.saveSettings();
+					})
+				});
+
+			new Setting(containerEl)
+				.setName("Link underline style")
+				.setDesc("Change the style of the underline for linked terms in the popover")
+				.addDropdown(component => {
+					component.addOption("dotted", "Dotted");
+					component.addOption("dashed", "Dashed");
+					component.addOption("solid", "Solid");
+					component.addOption("wavy", "Wavy");
+					component.setValue(this.settings.linkDecorationConfig.underlineStyle);
+					component.onChange(async val => {
+						this.settings.linkDecorationConfig.underlineStyle = val;
+						await this.plugin.saveSettings();
+					});
+				});
+
+		}
+
 	}
 }
 

@@ -1,7 +1,7 @@
 import { getLinkpath, MarkdownPostProcessor } from "obsidian";
 import { getDefFileManager } from "src/core/def-file-manager";
 import { getSettings } from "src/settings";
-import { DEF_DECORATION_CLS, getDecorationAttrs } from "./common";
+import { DEF_DECORATION_CLS, getDecorationAttrs, getLinkDecorationAttrs } from "./common";
 import { getDefinitionPopover } from "./definition-popover";
 import { LineScanner, PhraseInfo } from "./definition-search";
 
@@ -98,8 +98,10 @@ function getNormalDecorationSpan(container: HTMLElement, phraseInfo: PhraseInfo,
 }
 
 function getLinkDecorationSpan(container: HTMLElement, phraseInfo: PhraseInfo, currText: string): HTMLSpanElement {
+	const attributes = getLinkDecorationAttrs();
 	const span = container.createSpan({
 		cls: DEF_LINK_DECOR_CLS,
+		attr: attributes,
 		text: currText.slice(phraseInfo.from, phraseInfo.to),
 	});
 	span.addEventListener("click", (e) => {

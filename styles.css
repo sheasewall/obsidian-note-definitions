@@ -16,13 +16,13 @@
 }
 
 .def-decoration {
-	text-decoration: underline var(--color-yellow) dotted;
-	-webkit-text-decoration: underline var(--color-yellow) dotted;
+	text-decoration: underline var(--custom-underline-color) var(--custom-underline-style);
+	-webkit-text-decoration: underline var(--custom-underline-color) var(--custom-underline-style);
 }
 
 .def-link-decoration {
-	text-decoration: underline var(--color-green) dotted;
-	-webkit-text-decoration: underline var(--color-green) dotted;
+	text-decoration: underline var(--custom-underline-color) var(--custom-underline-style);
+	-webkit-text-decoration: underline var(--custom-underline-color) var(--custom-underline-style);
 	cursor: pointer;
 }
 
