@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, getFrontMatterInfo, TFile } from "obsidian";
 import { getSettings } from "src/settings";
 import { AtomicDefParser } from "./atomic-def-parser";
 import { ConsolidatedDefParser } from "./consolidated-def-parser";
@@ -24,7 +24,7 @@ export class FileParser {
 	// Optional argument used when file cache may not be updated
 	// and we know the new contents of the file
 	async parseFile(fileContent?: string): Promise<Definition[]> {
-		this.defFileType = this.getDefFileType();
+		this.defFileType = await this.getDefFileType();
 
 		switch (this.defFileType) {
 			case DefFileType.Consolidated:
@@ -36,9 +36,32 @@ export class FileParser {
 		}
 	}
 
-	private getDefFileType(): DefFileType {
+	private parseFrontMatterFromPlaintext(content: string): Map<string, string> {
+		const fm = getFrontMatterInfo(content).frontmatter;
+		const fmStrings = fm.trim().split("\n");
+
+		let frontmatter = new Map<string, string>();
+		for (const fmString of fmStrings) {
+			const split = fmString.split(":");
+			const keyfm = split[0];
+			const value = split[1].trim();
+			frontmatter.set(keyfm, value);
+		}
+
+		return frontmatter;
+	}
+
+	private async getDefFileType(): Promise<DefFileType> {
 		const fileCache = this.app.metadataCache.getFileCache(this.file);
-		const fmFileType = fileCache?.frontmatter?.[DEF_TYPE_FM];
+		let fmFileType = fileCache?.frontmatter?.[DEF_TYPE_FM];
+		if(!fmFileType) {
+			// File not in cache, so we have to read the file contents
+			// to determine the file type
+			const content = await this.app.vault.cachedRead(this.file);
+			const frontmatter = this.parseFrontMatterFromPlaintext(content);
+			fmFileType = frontmatter.get(DEF_TYPE_FM) as DefFileType;
+		}
+
 		if (fmFileType && 
 			(fmFileType === DefFileType.Consolidated || fmFileType === DefFileType.Atomic)) {
 			return fmFileType;

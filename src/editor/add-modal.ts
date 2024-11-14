@@ -14,6 +14,7 @@ export class AddDefinitionModal {
 	fileTypePicker: DropdownComponent;
 	defFilePickerSetting: Setting;
 	defFilePicker: DropdownComponent;
+	newFileButton: ButtonComponent;
 
 	atomicFolderPickerSetting: Setting;
 	atomicFolderPicker: DropdownComponent;
@@ -66,11 +67,15 @@ export class AddDefinitionModal {
 				component.addOption(DefFileType.Atomic, "Atomic");
 				component.onChange(val => {
 					if (val === DefFileType.Consolidated) {
+						this.newFolderButton.buttonEl.hide();
 						this.atomicFolderPickerSetting.settingEl.hide();
+						this.newFileButton.buttonEl.show();
 						this.defFilePickerSetting.settingEl.show();
 					} else if (val === DefFileType.Atomic) {
 						this.defFilePickerSetting.settingEl.hide();
+						this.newFileButton.buttonEl.hide();
 						this.atomicFolderPickerSetting.settingEl.show();
+						this.newFolderButton.buttonEl.show();
 					}
 				});
 				this.fileTypePicker = component;
@@ -85,6 +90,15 @@ export class AddDefinitionModal {
 					component.addOption(file.path, file.path);
 				});
 				this.defFilePicker = component;
+			});
+
+		this.newFileButton = new ButtonComponent(this.modal.contentEl)
+			.setClass('add-modal-new-folder-button')
+			.setButtonText("Create new consolidated file")
+			.onClick(() => {
+				const newFilePath = defManager.createConsolidatedFile();
+				this.defFilePicker.addOption(newFilePath, newFilePath);
+				this.defFilePicker.setValue(newFilePath);
 			});
 
 		this.atomicFolderPickerSetting = new Setting(this.modal.contentEl)
@@ -109,12 +123,13 @@ export class AddDefinitionModal {
 				};
 				this.atomicFolderPicker.addOption(globalFolderPath, globalFolderPath + "/");
 			});
+		this.newFolderButton.buttonEl.hide();
 
-		const button = this.modal.contentEl.createEl("button", {
+		const saveButton = this.modal.contentEl.createEl("button", {
 			text: "Save",
 			cls: 'edit-modal-save-button',
 		});
-		button.addEventListener('click', () => {
+		saveButton.addEventListener('click', () => {
 			if (this.submitting) {
 				return;
 			}
